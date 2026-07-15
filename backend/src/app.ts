@@ -7,7 +7,7 @@ import saleRoutes from "./routes/sale.routes";
 import customerRoutes from "./routes/customer.routes";
 import invoiceRoutes from "./routes/invoice.routes";
 import { notFoundHandler, errorHandler } from "./middleware/errorHandler";
-
+import "./types/express";
 
 
 // Side-effect import: pulls the req.auth type augmentation into this file's
