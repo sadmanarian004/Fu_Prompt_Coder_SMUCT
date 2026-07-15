@@ -1,0 +1,192 @@
+// DokanKhata AI — Prisma schema (Section 8.1 Data Model)
+// Database: MySQL, hosted on Aiven (Section 8.5)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Enums
+// ---------------------------------------------------------------------------
+
+enum Language {
+  en
+  bn
+}
+
+enum Role {
+  OWNER
+  STAFF
+}
+
+enum PaymentType {
+  PAID
+  CREDIT
+}
+
+enum PaymentMethod {
+  CASH
+  MOBILE_BANKING
+}
+
+// ---------------------------------------------------------------------------
+// Shop — the tenant. Every other model is scoped to a shopId so one shop's
+// data can never be read by another (enforced in tenant.middleware.ts).
+// ---------------------------------------------------------------------------
+
+model Shop {
+  id               String   @id @default(cuid())
+  name             String
+  address          String?
+  language         Language @default(en)
+  subscriptionPlan String   @default("free")
+
+  users          User[]
+  products       Product[]
+  sales          Sale[]
+  customers      Customer[]
+  aiInsightLogs  AIInsightLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([name])
+}
+
+// ---------------------------------------------------------------------------
+// User — an Owner or Staff account belonging to exactly one shop.
+// ---------------------------------------------------------------------------
+
+model User {
+  id           String   @id @default(cuid())
+  shopId       String
+  shop         Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         Role     @default(OWNER)
+
+  salesRecorded Sale[] @relation("SaleStaff")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([shopId])
+}
+
+// ---------------------------------------------------------------------------
+// Product — inventory items. stockQuantity/lowStockThreshold drive both the
+// low-stock badges in the UI and the AI daily-summary prompt.
+// ---------------------------------------------------------------------------
+
+model Product {
+  id                String   @id @default(cuid())
+  shopId            String
+  shop              Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  name              String
+  category          String   @default("")
+  unitPrice         Float
+  costPrice         Float    @default(0)
+  stockQuantity     Int      @default(0)
+  lowStockThreshold Int      @default(5)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([shopId])
+  @@index([shopId, name])
+}
+
+// ---------------------------------------------------------------------------
+// Sale — one transaction. `items` stores a denormalized snapshot of what was
+// sold (name/unitPrice/quantity) so historical invoices stay accurate even if
+// a product is later renamed, repriced, or deleted.
+// customerId is nullable for walk-in sales; customerName is always kept so an
+// invoice can print a name even without a linked Customer record.
+// ---------------------------------------------------------------------------
+
+model Sale {
+  id           String      @id @default(cuid())
+  shopId       String
+  shop         Shop        @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  staffId      String?
+  staff        User?       @relation("SaleStaff", fields: [staffId], references: [id])
+  customerId   String?
+  customer     Customer?   @relation(fields: [customerId], references: [id])
+
+  invoiceNo    String      @unique
+  customerName String      @default("Walk-in customer")
+  items        Json
+  totalAmount  Float
+  paymentType  PaymentType @default(PAID)
+  timestamp    DateTime    @default(now())
+
+  @@index([shopId, timestamp])
+  @@index([customerId])
+}
+
+// ---------------------------------------------------------------------------
+// Customer — the digital "baki khata". dueBalance is the running total owed;
+// it's decremented by Payment records rather than recalculated on read, so a
+// payment's effect is immediate and auditable.
+// ---------------------------------------------------------------------------
+
+model Customer {
+  id              String    @id @default(cuid())
+  shopId          String
+  shop            Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  name            String
+  phone           String    @default("")
+  dueBalance      Float     @default(0)
+  lastPaymentDate DateTime?
+
+  sales    Sale[]
+  payments Payment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([shopId])
+  @@index([shopId, dueBalance])
+}
+
+// ---------------------------------------------------------------------------
+// Payment — reduces a Customer's dueBalance. Kept as its own table (rather
+// than just mutating Customer.dueBalance) so the payment-history list in
+// RecordPaymentModal has something real to read from.
+// ---------------------------------------------------------------------------
+
+model Payment {
+  id         String        @id @default(cuid())
+  customerId String
+  customer   Customer      @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  amount     Float
+  method     PaymentMethod @default(CASH)
+  date       DateTime      @default(now())
+
+  @@index([customerId, date])
+}
+
+// ---------------------------------------------------------------------------
+// AIInsightLog — caches every Gemini response (Section 8.3). promptType
+// distinguishes the once-a-day cached summary from ad-hoc owner questions;
+// ai.controller.ts checks this table before calling Gemini again.
+// ---------------------------------------------------------------------------
+
+model AIInsightLog {
+  id         String   @id @default(cuid())
+  shopId     String
+  shop       Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  promptType String   // "daily_summary" | "owner_query"
+  prompt     String?  @db.Text
+  response   String   @db.Text
+
+  createdAt DateTime @default(now())
+
+  @@index([shopId, promptType, createdAt])
+}
