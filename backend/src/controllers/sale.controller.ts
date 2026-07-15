@@ -1,3 +1,4 @@
+/// <reference path="../types/express.d.ts" />
 import { Request, Response } from "express";
 import { z } from "zod";
 import prisma from "../config/db";
@@ -33,7 +34,7 @@ function mapSaleToDTO(sale: {
     id: sale.id,
     invoiceNo: sale.invoiceNo,
     customerName: sale.customerName,
-    items: sale.items as SaleItemSnapshot[],
+    items: sale.items as unknown as SaleItemSnapshot[],
     total: sale.totalAmount,
     paymentType: sale.paymentType.toLowerCase() as "paid" | "credit",
     createdAt: sale.timestamp,
@@ -216,7 +217,7 @@ export async function getTopProducts(req: Request, res: Response) {
 
   const unitsByProduct = new Map<string, { id: string; name: string; unitsSold: number }>();
   for (const sale of sales) {
-    const items = (sale.items as SaleItemSnapshot[]) ?? [];
+    const items = (sale.items as unknown as SaleItemSnapshot[]) ?? [];
     for (const item of items) {
       const existing = unitsByProduct.get(item.productId);
       if (existing) {

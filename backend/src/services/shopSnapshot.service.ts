@@ -1,5 +1,5 @@
 import prisma from "../config/db";
-import { ShopSnapshot, ShopLanguage } from "./gemini.service";
+import { ShopSnapshot, ShopLanguage } from "../services/gemini.service";
 
 const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
 const daysAgo = (n: number) => {
@@ -53,7 +53,7 @@ export async function buildShopSnapshot(shopId: string): Promise<ShopSnapshot> {
   // surface top- and slow-moving products for the AI prompt.
   const unitsByProduct = new Map<string, number>();
   for (const sale of weekSales) {
-    const items = (sale.items as { name: string; quantity: number }[]) ?? [];
+    const items = (sale.items as unknown as { name: string; quantity: number }[]) ?? [];
     for (const item of items) {
       unitsByProduct.set(
         item.name,

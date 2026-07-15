@@ -32,7 +32,7 @@ export async function downloadInvoicePdf(req: Request, res: Response) {
     return res.status(404).json({ message: "Invoice not found." });
   }
 
-  const items = (sale.items as SaleItemSnapshot[]) ?? [];
+  const items = (sale.items as unknown as SaleItemSnapshot[]) ?? [];
 
   res.setHeader("Content-Type", "application/pdf");
   res.setHeader("Content-Disposition", `attachment; filename="${sale.invoiceNo}.pdf"`);
