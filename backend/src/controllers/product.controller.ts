@@ -1,3 +1,4 @@
+/// <reference path="../types/express.d.ts" />
 import { Request, Response } from "express";
 import { z } from "zod";
 import prisma from "../config/db";
@@ -56,7 +57,15 @@ export async function createProduct(req: Request, res: Response) {
 
   const shopId = req.auth!.shopId;
   const product = await prisma.product.create({
-    data: { shopId, ...parsed.data },
+    data: {
+      shopId,
+      name: parsed.data.name,
+      category: parsed.data.category,
+      unitPrice: parsed.data.unitPrice,
+      costPrice: parsed.data.costPrice,
+      stockQuantity: parsed.data.stockQuantity,
+      lowStockThreshold: parsed.data.lowStockThreshold,
+    },
   });
 
   return res.status(201).json(product);

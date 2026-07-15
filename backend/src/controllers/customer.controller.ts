@@ -1,3 +1,4 @@
+/// <reference path="../types/express.d.ts" />
 import { Request, Response } from "express";
 import { z } from "zod";
 import prisma from "../config/db";
@@ -71,7 +72,12 @@ export async function createCustomer(req: Request, res: Response) {
 
   const shopId = req.auth!.shopId;
   const customer = await prisma.customer.create({
-    data: { shopId, ...parsed.data, dueBalance: 0 },
+    data: {
+      shopId,
+      name: parsed.data.name,
+      phone: parsed.data.phone,
+      dueBalance: 0,
+    },
   });
 
   return res.status(201).json(mapCustomerToDTO(customer));
