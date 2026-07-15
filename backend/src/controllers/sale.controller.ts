@@ -1,6 +1,7 @@
 /// <reference path="../types/express.d.ts" />
 import { Request, Response } from "express";
 import { z } from "zod";
+import { Prisma } from "@prisma/client";
 import prisma from "../config/db";
 
 const saleItemSchema = z.object({
@@ -126,7 +127,7 @@ export async function createSale(req: Request, res: Response) {
           customerId,
           invoiceNo,
           customerName: customerName.trim() || "Walk-in customer",
-          items: snapshot,
+          items: snapshot as unknown as Prisma.InputJsonValue,
           totalAmount,
           paymentType: paymentType === "credit" ? "CREDIT" : "PAID",
         },
