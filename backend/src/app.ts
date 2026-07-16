@@ -7,16 +7,6 @@ import saleRoutes from "./routes/sale.routes";
 import customerRoutes from "./routes/customer.routes";
 import invoiceRoutes from "./routes/invoice.routes";
 import { notFoundHandler, errorHandler } from "./middleware/errorHandler";
-import "./types/express";
-
-
-// Side-effect import: pulls the req.auth type augmentation into this file's
-// import graph. Vercel's serverless build type-checks only what's reachable
-// from api/index.ts -> app.ts -> ..., and express.d.ts is a pure ambient
-// declaration that nothing else imports — without this line it's silently
-// left out of that graph, which is exactly what caused the TS2339 build error.
-
-
 
 const app = express();
 
