@@ -3,9 +3,15 @@
 import { useEffect, useMemo, useState } from "react";
 import apiClient from "../../../lib/apiClient";
 import { useLanguage } from "../../../context/LanguageContext";
-import ProductFormModal, {
-  Product,
-} from "../../components/inventory/ProductFormModal";
+export interface Product {
+  id: string;
+  name: string;
+  category: string;
+  unitPrice: number;
+  costPrice: number;
+  stockQuantity: number;
+  lowStockThreshold: number;
+}
 
 // Fallback data so the page demos meaningfully before the API is wired up
 const FALLBACK_PRODUCTS: Product[] = [
