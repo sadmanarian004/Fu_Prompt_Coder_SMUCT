@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import apiClient from "../../../lib/apiClient";
 import { useLanguage } from "../../../context/LanguageContext";
+// 🛡️ Consolidated import tracking for both the component and its strict type mapping definitions
 import ProductFormModal, {
   Product,
 } from "../../components/inventory/ProductFormModal";
@@ -259,7 +260,7 @@ export default function InventoryPage() {
                           {deletingId === product.id
                             ? language === "bn" ? "মুছছে…" : "Deleting…"
                             : confirming
-                            ? language === "bn" ? "নিশ্চিত করুন?" : "Confirm?"
+                            ? language === "bn" ? "নিশ্চیت করুন?" : "Confirm?"
                             : language === "bn" ? "মুছুন" : "Delete"}
                         </button>
                       </div>
