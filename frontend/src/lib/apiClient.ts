@@ -22,7 +22,8 @@ apiClient.interceptors.response.use(
     if (
       typeof window !== "undefined" &&
       error?.response?.status === 401 &&
-      window.location.pathname !== "/login"
+process.env.NEXT_PUBLIC_DEMO_MODE !== "true" &&
+window.location.pathname !== "/login"
     ) {
       localStorage.removeItem("token");
       window.location.href = "/login";
