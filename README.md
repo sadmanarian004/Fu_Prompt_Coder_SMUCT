@@ -39,19 +39,6 @@ Category: *Finance, FinTech & Digital Payments / Artificial Intelligence & ML*
 
 ---
 
-## Team
-
-**Team Name:** FU_Prompt_Coder
-**Institution:** Feni University
-
-| Name | Student ID | Role |
-|---|---|---|
-| **Abdullah Al Mamun Zishan** | 232031009 | Team Leader |
-| **Abdullah Al Monir** | 242031022 | Team Member |
-| **Md Sadman Islam Arian** | 242031004 | Team Member |
-
----
-
 ## Abstract
 
 Micro, small, and medium retail businesses across Bangladesh — neighborhood shops (*dokans*), small distributors, and rural agri-input sellers — overwhelmingly still track sales, stock, and customer credit (*baki*) using paper ledgers or fragmented spreadsheets. This leads to stock-outs, uncollected dues, and an inability to make data-driven decisions.
